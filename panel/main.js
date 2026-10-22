@@ -240,7 +240,7 @@ button, input, textarea, select { font: inherit; }
 .po-footer { flex: none; padding: 12px 16px; border-top: 1px solid var(--oc-border); background: var(--ext-bg); }
 .po-footer p { margin: 0 0 8px; }
 .po-footer .ext-actions { justify-content: flex-end; }
-.po-status-row { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; gap: 12px; min-width: 0; min-height: 24px; }
+.po-status-row { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: baseline; gap: 12px; min-width: 0; min-height: 20px; }
 .po-status-label { color: var(--oc-muted); font-size: 12px; }
 .po-status-value { min-width: 0; overflow: hidden; text-align: right; text-overflow: ellipsis; white-space: nowrap; font-size: 12px; font-weight: 500; }
 .po-status-value[data-status="applied"] { color: var(--oc-success-text); }
@@ -249,7 +249,7 @@ button, input, textarea, select { font: inherit; }
 .po-status-value[data-status="missing"] { color: var(--oc-error-text); }
 .po-section { padding: 4px 0 0; }
 .po-section p { margin: 0; }
-.po-status-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; margin-top: 4px; }
+.po-status-footer { display: flex; align-items: center; justify-content: space-between; gap: 8px; }
 .po-status-footer .ext-actions { flex: none; gap: 4px; }
 .po-status-footer .oc-sdk-btn { min-height: 28px; padding: 0 6px; font-weight: 400; }
 html[data-oc-surface="status"] { --ext-bg: color-mix(in srgb, var(--surface-muted, transparent) 40%, var(--surface-background, transparent)); height: auto; }
