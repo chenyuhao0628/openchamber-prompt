@@ -1,0 +1,25 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <link rel="icon" href="data:,">
+  <title>内置提示词 · 预览</title>
+  <style>
+    * { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    :root { color-scheme: light dark; --stage: #eeedeb; --shell: #faf9f7; --border: #dedbd7; }
+    body { display: flex; justify-content: center; align-items: stretch; padding: 16px; background: var(--stage); }
+    .stage { width: 400px; max-width: 100%; height: min(820px, calc(100vh - 32px)); }
+    body[data-surface="status"] .stage { height: 220px; }
+    .shell { width: 100%; height: 100%; overflow: hidden; border: 1px solid var(--border); border-radius: 8px; background: var(--shell); }
+    iframe { display: block; width: 100%; height: 100%; border: 0; }
+    @media (prefers-color-scheme: dark) { :root { --stage: #171715; --shell: #20201e; --border: #3a3935; } }
+    @media (max-width: 440px) { body { padding: 8px; } .stage { height: calc(100vh - 16px); } body[data-surface="status"] .stage { height: 220px; } }
+  </style>
+</head>
+<body>
+  <main class="stage"><div class="shell"><iframe title="内置提示词扩展"></iframe></div></main>
+  <script type="module" src="/preview.js"></script>
+</body>
+</html>

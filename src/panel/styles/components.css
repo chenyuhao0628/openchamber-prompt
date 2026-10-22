@@ -1,0 +1,18 @@
+.po-field .oc-sdk-field-label { font-size: 12px; }
+.po-field .oc-sdk-input { font-size: 13px; min-height: 36px; }
+.po-field textarea { min-height: 220px; max-height: 60vh; resize: vertical; line-height: 1.65; tab-size: 2; }
+.po-field .oc-sdk-field-note { font-variant-numeric: tabular-nums; }
+.po-editor { min-width: 0; }
+.po-review-title { margin: 0; font-size: 14px; overflow-wrap: anywhere; }
+.po-review-note { margin: 0; padding: 8px 10px; font-size: 12px; }
+.po-review-summary { margin: 0; font-variant-numeric: tabular-nums; }
+.po-review-hint { margin: 0; font-size: 11px; }
+.po-review-actions { padding-top: 10px; border-top: 1px solid var(--oc-border); }
+.po-diff { max-height: 42vh; overflow: auto; border: 1px solid var(--oc-border); border-radius: var(--oc-radius); font: 11px/1.65 var(--oc-mono); }
+.po-diff-line { display: grid; grid-template-columns: 30px 30px 16px minmax(0, 1fr); min-width: 0; }
+.po-diff-line span { padding: 1px 3px; color: var(--oc-muted); text-align: right; user-select: none; }
+.po-diff-line code { padding: 1px 8px 1px 0; font: inherit; white-space: pre-wrap; overflow-wrap: anywhere; }
+.po-diff-line[data-kind="add"] { background: color-mix(in srgb, var(--oc-success) 10%, transparent); color: var(--oc-success-text); }
+.po-diff-line[data-kind="remove"] { background: color-mix(in srgb, var(--oc-error) 10%, transparent); color: var(--oc-error-text); }
+.po-diff-gap { margin: 0; padding: 5px 12px; background: var(--oc-hover); color: var(--oc-muted); font: 11px/1.5 var(--oc-font); }
+.po-preview { max-height: 40vh; margin: 0; padding: 12px; overflow: auto; border: 1px solid var(--oc-border); border-radius: var(--oc-radius); font: 11px/1.65 var(--oc-mono); white-space: pre-wrap; overflow-wrap: anywhere; }
