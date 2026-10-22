@@ -1,6 +1,8 @@
 # 内置提示词 · openchamber-prompt
 
-当前版本 **0.1.3**，核对日期 **2026-10-21**。在 OpenChamber 中管理 OpenCode `build` agent 的提示词覆盖文件：一键应用、预览差异、备份、还原内置。
+当前版本 **0.1.4**，核对日期 **2026-10-21**。在 OpenChamber 中管理 OpenCode `build` agent 的提示词覆盖文件：一键应用、预览差异、备份、还原内置。
+
+> 本仓库只发布扩展框架，不包含任何提示词正文。编辑框默认空白，请填入你要应用的提示词。
 
 > 这里管理的是 **`~/.config/opencode/agents/build.md`**，它会替换 build agent 的内置 system prompt，不是追加规则。全局 `AGENTS.md` 仍由「规则方案」扩展管理，两者互不替代。
 

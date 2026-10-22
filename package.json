@@ -1,6 +1,6 @@
 {
   "name": "openchamber-prompt",
-  "version": "0.1.3",
+  "version": "0.1.4",
   "private": true,
   "type": "module",
   "description": "OpenChamber 内置提示词覆盖：一键应用、备份与还原。",
