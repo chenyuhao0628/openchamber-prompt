@@ -1,4 +1,40 @@
-# 内置提示词 · openchamber-prompt
+# openchamber-prompt
+
+English | [简体中文](#简体中文)
+
+## English
+
+**Prompt Override** manages the OpenCode build agent's system prompt override in `~/.config/opencode/agents/build.md`. It previews the diff, backs up the current file, writes and reads back, and can restore the baseline stub.
+
+### Highlights
+
+- Apply, preview, back up and restore the build prompt from one panel and Work Status section.
+- Detects external edits and enters a drift state instead of overwriting.
+- Ships no prompt text; the editor starts empty.
+- Replaces the complete build system prompt, so tool policies and code references must be preserved.
+- Only touches `~/.config/opencode/agents/build.md` and `~/.config/openchamber/prompt-override/**`.
+
+### Screenshot
+
+<img src="docs/screenshots/panel.jpg" alt="Prompt Override panel" width="420">
+
+*Synthetic preview with sample prompt text. No real prompt file is read or changed.*
+
+### Install
+
+In OpenChamber, open **Settings → Extensions → Add extension** and paste:
+
+```text
+https://github.com/chenyuhao0628/openchamber-prompt
+```
+
+Requires OpenChamber **2.4.0 or newer**. This extension replaces the complete build system prompt; it is not an additional rule file.
+
+> Uninstall does not restore `build.md`; choose **Restore built-in** first. The panel UI is currently Chinese. The full Chinese documentation is below.
+
+---
+
+## 简体中文
 
 当前版本 **0.1.5**，核对日期 **2026-10-22**。在 OpenChamber 中管理 OpenCode `build` agent 的提示词覆盖文件：一键应用、预览差异、备份、还原内置。
 
@@ -110,3 +146,7 @@ npm test
 - [OpenChamber SDK](https://github.com/openchamber/openchamber/blob/main/packages/sdk/API.md)
 
 官方字段以锁定 SDK 和本机宿主实际行为为准。
+
+## License
+
+MIT. See [LICENSE](LICENSE).
