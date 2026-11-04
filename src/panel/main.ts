@@ -7,13 +7,15 @@ import { mountView, type Action, type State } from './view.ts';
 import native from '../../ui/native.css';
 import layout from './styles/layout.css';
 import components from './styles/components.css';
+import { applyDocumentLanguage, i18n } from './i18n.ts';
 
+const { t } = i18n;
 const style = document.createElement('style');
 style.textContent = native + layout + components;
 document.head.append(style);
 
 const host = connectHost({ requestTimeoutMs: 20_000 });
-const repo = createRepository(hostFiles(host));
+const repo = createRepository(hostFiles(host, t), Date.now, () => crypto.randomUUID(), t);
 const state: State = {
   loaded: null,
   busy: false,
@@ -44,7 +46,7 @@ const run = async (work: () => Promise<void>) => {
   try {
     await work();
   } catch (error) {
-    notice(explainError(error), 'error');
+    notice(explainError(error, t), 'error');
     if (error instanceof ConflictError && state.review) state.reviewInvalid = true;
   } finally {
     state.busy = false;
@@ -62,7 +64,7 @@ const refresh = async () => {
     state.review = null;
     state.reviewInvalid = false;
   } catch (error) {
-    if (state.loaded) throw new Error(`${explainError(error)} 当前仍显示上次读取结果。`, { cause: error });
+    if (state.loaded) throw new Error(`${explainError(error, t)} ${t('当前仍显示上次读取结果')}。`, { cause: error });
     throw error;
   }
 };
@@ -86,7 +88,7 @@ const actions: Record<Action, () => void> = {
       state.review = null;
       state.customDirty = false;
       state.backups = await repo.listBackups();
-      notice(state.loaded.status === 'builtin' ? '已还原为内置提示词。建议新建会话确认。' : '覆盖已写入 build.md。建议新建会话确认加载。', 'success');
+      notice(state.loaded.status === 'builtin' ? t('已还原为内置提示词。建议新建会话确认。') : t('覆盖已写入 build.md。建议新建会话确认加载。'), 'success');
     } catch (error) {
       state.reviewInvalid = true;
       try { state.loaded = await repo.load(); } catch { /* Keep last observed state. */ }
@@ -101,7 +103,7 @@ const actions: Record<Action, () => void> = {
   }); },
 };
 
-const view = mountView(document.querySelector<HTMLElement>('#root')!, {
+const view = mountView(document.querySelector<HTMLElement>('#root')!, i18n, {
   action: action => { if (!state.busy) actions[action](); },
   tab: id => {
     if (state.busy || state.review) return;
@@ -121,6 +123,11 @@ const view = mountView(document.querySelector<HTMLElement>('#root')!, {
 let initialized = false;
 host.onReady(context => {
   applyHostReady(context, document.documentElement);
-  if (!initialized) { initialized = true; void run(refresh); }
+  const changed = i18n.setLocale(context.locale);
+  applyDocumentLanguage(i18n);
+  document.title = t('内置提示词');
+  if (!initialized) { initialized = true; if (changed) view.localize(); void run(refresh); return; }
+  if (changed) { view.localize(); render(); }
 });
+document.title = t('内置提示词');
 render();

@@ -14,6 +14,7 @@ English | [简体中文](#简体中文)
 - Replaces the complete build system prompt, so tool policies and code references must be preserved.
 - Only touches `~/.config/opencode/agents/build.md` and `~/.config/openchamber/prompt-override/**`.
 
+- Panel and Work Status copy follow the host language (Simplified Chinese or English).
 ### Screenshot
 
 <img src="docs/screenshots/panel.jpg" alt="Prompt Override panel" width="420">
@@ -30,13 +31,13 @@ https://github.com/chenyuhao0628/openchamber-prompt
 
 Requires OpenChamber **2.4.0 or newer**. This extension replaces the complete build system prompt; it is not an additional rule file.
 
-> Uninstall does not restore `build.md`; choose **Restore built-in** first. The panel UI is currently Chinese. The full Chinese documentation is below.
+> Uninstall does not restore `build.md`; choose **Restore built-in** first. The panel and Work Status copy follow the host language (Simplified Chinese or English). The full Chinese documentation is below.
 
 ---
 
 ## 简体中文
 
-当前版本 **0.1.5**，核对日期 **2026-10-22**。在 OpenChamber 中管理 OpenCode `build` agent 的提示词覆盖文件：一键应用、预览差异、备份、还原内置。
+当前版本 **0.1.6**，核对日期 **2026-11-04**。面板文案跟随宿主语言在简体中文和英文间切换。在 OpenChamber 中管理 OpenCode `build` agent 的提示词覆盖文件：一键应用、预览差异、备份、还原内置。
 
 > 本仓库只发布扩展框架，不包含任何提示词正文。编辑框默认空白，请填入你要应用的提示词。
 

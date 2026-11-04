@@ -1,4 +1,5 @@
 const params = new URLSearchParams(location.search);
+const locale = params.get('locale') || 'zh-CN';
 let section = params.get('surface') === 'status';
 const darkQuery = matchMedia('(prefers-color-scheme: dark)');
 let dark = darkQuery.matches;
@@ -8,31 +9,9 @@ const dataDir = '~/.config/openchamber/prompt-override';
 const statePath = `${dataDir}/state.json`;
 const backupDir = `${dataDir}/backups`;
 const stub = '---\nmode: all\n---\n\n';
-const sampleBody = [
-  '# 角色',
-  '',
-  '你是一名谨慎的软件工程代理。先理解现有代码，再修改。',
-  '',
-  '## 工作方式',
-  '',
-  '- 先读取相关文件和测试，再提出改动。',
-  '- 只做任务需要的最小修改，保留现有风格。',
-  '- 完成后运行相关检查，并说明未验证的部分。',
-].join('\n');
-const samplePrompt = `---\nmode: all\n---\n\n${sampleBody}\n`;
-const sampleState = {
-  version: 1,
-  baseline: { exists: true, content: stub },
-  applied: { exists: true, content: samplePrompt },
-  appliedAt: Date.now(),
-  baselineLabel: '内置提示词基线 · 2026-10-21',
-};
 
 const frame = document.querySelector('iframe');
-const disk = new Map([
-  [target, samplePrompt],
-  [statePath, JSON.stringify(sampleState, null, 2)],
-]);
+const disk = new Map([[target, stub]]);
 
 const tokens = dark => ({
   background: dark ? '#20201e' : '#faf9f7',
@@ -70,7 +49,7 @@ const ready = () => frame.contentWindow.postMessage({
   type: 'ready',
   payload: {
     theme: { mode: dark ? 'dark' : 'light', tokens: tokens(dark) },
-    locale: 'zh-CN',
+    locale,
     directory: '/fixture/project',
     session: null,
     surface: section ? 'status' : 'panel',
