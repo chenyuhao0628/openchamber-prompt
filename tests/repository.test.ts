@@ -51,7 +51,7 @@ test('应用覆盖会写文件、建备份并记录状态', async () => {
   assert.equal(await repo.listBackups().then(items => items.length), 1);
 });
 
-test('还原会写回基线 stub', async () => {
+test('还原会写回空 stub', async () => {
   const { files, repo } = setup();
   const loaded = await repo.load();
   const applied = await repo.apply(loaded, await repo.reviewApply(loaded, 'Override body.'));
