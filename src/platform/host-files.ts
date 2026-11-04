@@ -7,7 +7,7 @@ const errorCode = (error: unknown): unknown => error && typeof error === 'object
 type Operation = 'read' | 'write' | 'list';
 
 const targetLabel = (path: string, operation: Operation, t: Translate): string => {
-  if (path === TARGET_PATH) return t('build 提示词');
+  if (path === TARGET_PATH) return t('build.md 覆盖');
   if (path === STATE_PATH) return t('覆盖状态');
   if (path === `${BACKUP_DIR}` && operation === 'list') return t('备份列表');
   if (path.startsWith(`${BACKUP_DIR}/`)) return t('备份文件');

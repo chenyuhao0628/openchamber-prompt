@@ -88,7 +88,7 @@ const actions: Record<Action, () => void> = {
       state.review = null;
       state.customDirty = false;
       state.backups = await repo.listBackups();
-      notice(state.loaded.status === 'builtin' ? t('已还原为内置提示词。建议新建会话确认。') : t('覆盖已写入 build.md。建议新建会话确认加载。'), 'success');
+      notice(state.loaded.status === 'builtin' ? t('已还原为空 stub，交回 OpenCode 默认。建议新建会话确认。') : t('还原已写入。建议新建会话确认。'), 'success');
     } catch (error) {
       state.reviewInvalid = true;
       try { state.loaded = await repo.load(); } catch { /* Keep last observed state. */ }

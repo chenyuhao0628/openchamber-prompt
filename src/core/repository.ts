@@ -47,12 +47,13 @@ export const parseState = (raw: string, t: Translate = identity): State => {
 
 const detectStatus = (state: State | null, current: Snapshot): Status => {
   if (!current.exists) return 'missing';
+  if (isStub(current.content)) return 'builtin';
   if (state) {
-    if (sameSnapshot(current, state.baseline)) return isStub(state.baseline.content) ? 'builtin' : 'baseline';
+    if (sameSnapshot(current, state.baseline)) return 'baseline';
     if (sameSnapshot(current, state.applied)) return 'applied';
     return 'drifted';
   }
-  return isStub(current.content) ? 'builtin' : 'drifted';
+  return 'drifted';
 };
 
 const baselineFor = (loaded: Loaded, review: Review, current: Snapshot): Snapshot => {
@@ -98,8 +99,7 @@ export const createRepository = (
   };
 
   const reviewRestore = async (loaded: Loaded): Promise<Review> => {
-    const content = loaded.state?.baseline.exists ? loaded.state.baseline.content : STUB;
-    return { kind: 'restore', before: loaded.current, content, label: t('还原内置') };
+    return { kind: 'restore', before: loaded.current, content: STUB, label: t('还原为空（交回默认）') };
   };
 
   const listBackups = async (): Promise<string[]> => (await files.list(BACKUP_DIR))

@@ -4,7 +4,7 @@ export const STATE_PATH = `${DATA_DIR}/state.json`;
 export const BACKUP_DIR = `${DATA_DIR}/backups`;
 export const STUB = '---\nmode: all\n---\n\n';
 export const MAX_PROMPT = 100_000;
-export const BASELINE_LABEL = '内置提示词基线 · 2026-10-21';
+export const BASELINE_LABEL = '基线快照（仅记录，不用于还原）';
 
 export type Snapshot = { exists: boolean; content: string };
 export type State = {

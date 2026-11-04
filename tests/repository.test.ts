@@ -106,7 +106,7 @@ test('无状态文件时从外部修改还原，基线应记为 stub', async () 
   assert.equal(files.data.get(TARGET_PATH), STUB);
 });
 
-test('无状态文件时应用覆盖，基线保留原外部内容', async () => {
+test('无状态文件时应用覆盖，还原仍写空 stub，基线仅记录', async () => {
   const { files, repo } = setup();
   files.data.set(TARGET_PATH, 'external content');
   const loaded = await repo.load();
@@ -114,8 +114,9 @@ test('无状态文件时应用覆盖，基线保留原外部内容', async () =>
   assert.equal(applied.status, 'applied');
   assert.equal(applied.state?.baseline.content, 'external content');
   const restored = await repo.apply(applied, await repo.reviewRestore(applied));
-  assert.equal(restored.status, 'baseline');
-  assert.equal(files.data.get(TARGET_PATH), 'external content');
+  assert.equal(restored.status, 'builtin');
+  assert.equal(files.data.get(TARGET_PATH), STUB);
+  assert.equal(restored.state?.baseline.content, 'external content');
 });
 
 test('损坏的状态文件不会静默重置', async () => {

@@ -1,7 +1,7 @@
 import { mountButton, mountSelect, mountTabs, mountTextField, type ButtonHandle, type ButtonVariant } from '@openchamber/sdk/ui';
 import type { I18n, Translate } from '../shared/i18n.ts';
 import { diffLines } from '../core/diff.ts';
-import { TARGET_PATH, type Backup, type Loaded, type Review, type Status } from '../core/types.ts';
+import { TARGET_PATH, isStub, type Backup, type Loaded, type Review, type Status } from '../core/types.ts';
 
 export type State = {
   loaded: Loaded | null;
@@ -27,26 +27,20 @@ export const el = <K extends keyof HTMLElementTagNameMap>(tag: K, className = ''
 };
 
 export const statusLabel = (status: Status, t: Translate = source => source): string => {
-  if (status === 'builtin') return t('使用内置提示词');
-  if (status === 'baseline') return t('使用基线内容');
+  if (status === 'builtin') return t('未覆盖（交回 OpenCode 默认）');
+  if (status === 'baseline') return t('匹配基线快照');
   if (status === 'applied') return t('已应用覆盖');
   if (status === 'drifted') return t('文件已被外部修改');
   return t('build.md 缺失');
 };
 
 export const statusShort = (status: Status, t: Translate = source => source): string => {
-  if (status === 'builtin') return t('内置');
+  if (status === 'builtin') return t('未覆盖');
   if (status === 'baseline') return t('基线');
   if (status === 'applied') return t('已覆盖');
   if (status === 'drifted') return t('外部修改');
   return t('缺失');
 };
-
-export const baselineLabel = (label: string, t: Translate): string => (
-  label.startsWith('内置提示词基线 · ')
-    ? t('内置提示词基线 · {date}', { date: label.slice('内置提示词基线 · '.length) })
-    : label
-);
 
 export const mountView = (root: HTMLElement, i18n: I18n, callbacks: {
   action: (action: Action) => void;
@@ -59,7 +53,7 @@ export const mountView = (root: HTMLElement, i18n: I18n, callbacks: {
   const header = el('header', 'po-header');
   const kickerRow = el('div', 'po-kicker-row');
   const refreshSlot = el('div', 'po-refresh');
-  const kicker = el('p', 'ext-muted po-kicker', t('当前 build 提示词'));
+  const kicker = el('p', 'ext-muted po-kicker', t('当前 build.md 覆盖'));
   kickerRow.append(kicker, refreshSlot);
   const title = el('h1', 'po-title', t('正在连接 OpenChamber…'));
   const context = el('p', 'ext-muted po-context', t('当前 OpenCode · build agent'));
@@ -72,7 +66,7 @@ export const mountView = (root: HTMLElement, i18n: I18n, callbacks: {
   message.setAttribute('aria-live', 'polite');
 
   const overview = el('section', 'po-stack');
-  overview.setAttribute('aria-label', t('内置提示词状态'));
+  overview.setAttribute('aria-label', t('build.md 覆盖状态'));
   const meta = el('dl', 'po-meta');
   const baselineDd = el('dd', '', t('尚未建立基线'));
   const targetDt = el('dt', '', t('目标文件'));
@@ -82,8 +76,7 @@ export const mountView = (root: HTMLElement, i18n: I18n, callbacks: {
   const targetCode = el('code', '', TARGET_PATH);
   targetCode.title = TARGET_PATH;
   targetDd.append(targetCode);
-  const hint = el('p', 'ext-muted po-hint', t('替换 build 的 system prompt；AGENTS.md 仍追加。影响所有项目与 provider。'));
-  overview.append(meta, hint);
+  overview.append(meta);
 
   const review = el('section', 'po-stack po-review');
   review.setAttribute('aria-label', t('覆盖差异预览'));
@@ -104,7 +97,7 @@ export const mountView = (root: HTMLElement, i18n: I18n, callbacks: {
   custom.append(customField);
 
   const backups = el('section', 'po-stack');
-  backups.setAttribute('aria-label', t('build 提示词备份'));
+  backups.setAttribute('aria-label', t('build.md 覆盖备份'));
   const backupSelectSlot = el('div');
   const backupNote = el('p', 'ext-muted po-hint');
   const backupText = el('pre', 'po-preview');
@@ -114,7 +107,7 @@ export const mountView = (root: HTMLElement, i18n: I18n, callbacks: {
   backups.append(backupNote, backupSelectSlot, backupText, backupActions);
 
   const footer = el('footer', 'po-footer');
-  const footerHint = el('p', 'ext-muted', t('应用或还原都会先预览差异；写入前会备份当前 build.md。'));
+  const footerHint = el('p', 'ext-muted', t('应用或还原都会先预览并备份。'));
   footer.append(footerHint);
   const footerActions = el('div', 'ext-actions');
   footer.append(footerActions);
@@ -129,7 +122,7 @@ export const mountView = (root: HTMLElement, i18n: I18n, callbacks: {
     buttons.set(action, handle);
   };
   button(refreshSlot, 'refresh', '刷新');
-  button(footerActions, 'restore', '还原内置', 'outline');
+  button(footerActions, 'restore', '还原为空（交回默认）', 'outline');
   button(footerActions, 'applyBundled', '应用覆盖', 'default');
   button(reviewActions, 'cancel', '返回编辑', 'outline');
   button(reviewActions, 'confirm', '确认写入', 'default');
@@ -141,12 +134,12 @@ export const mountView = (root: HTMLElement, i18n: I18n, callbacks: {
     onChange: callbacks.tab,
   });
   const editor = mountTextField(customField, {
-    label: t('覆盖内容 · Markdown'),
+    label: t('覆盖内容'),
     value: '',
     mono: true,
     multiline: true,
     rows: 12,
-    placeholder: t('在这里填写 build agent 的 system prompt 正文…'),
+    placeholder: t('填写 system prompt…'),
     onChange: callbacks.custom,
   });
   const backupSelect = mountSelect(backupSelectSlot, {
@@ -166,7 +159,7 @@ export const mountView = (root: HTMLElement, i18n: I18n, callbacks: {
     diff.replaceChildren();
     reviewTitle.textContent = item.label;
     reviewNote.textContent = item.kind === 'restore'
-      ? t('此操作会写回基线 stub，恢复内置提示词。')
+      ? t('写回空 stub，移除覆盖，交回 OpenCode 默认。')
       : item.kind === 'backup'
         ? t('此操作会写回选中的备份内容。')
         : t('此操作会替换 build.md 的正文，影响所有项目和 provider。');
@@ -191,26 +184,25 @@ export const mountView = (root: HTMLElement, i18n: I18n, callbacks: {
     if (!result.lines.length) diff.append(el('p', 'po-diff-gap', t('文件内容为空')));
   };
   const localize = () => {
-    kicker.textContent = t('当前 build 提示词');
+    kicker.textContent = t('当前 build.md 覆盖');
     context.textContent = t('当前 OpenCode · build agent');
-    overview.setAttribute('aria-label', t('内置提示词状态'));
+    overview.setAttribute('aria-label', t('build.md 覆盖状态'));
     targetDt.textContent = t('目标文件');
     baselineDt.textContent = t('基线');
-    hint.textContent = t('替换 build 的 system prompt；AGENTS.md 仍追加。影响所有项目与 provider。');
     review.setAttribute('aria-label', t('覆盖差异预览'));
     reviewHint.textContent = t('确认前请检查下方差异；写入前会备份当前 build.md。');
     diff.setAttribute('aria-label', t('差异，左侧为原行号，右侧为新行号'));
     custom.setAttribute('aria-label', t('覆盖内容'));
-    backups.setAttribute('aria-label', t('build 提示词备份'));
+    backups.setAttribute('aria-label', t('build.md 覆盖备份'));
     backupText.setAttribute('aria-label', t('备份内容'));
-    footerHint.textContent = t('应用或还原都会先预览差异；写入前会备份当前 build.md。');
+    footerHint.textContent = t('应用或还原都会先预览并备份。');
     buttons.get('refresh')!.update({ label: t('刷新') });
-    buttons.get('restore')!.update({ label: t('还原内置') });
+    buttons.get('restore')!.update({ label: t('还原为空（交回默认）') });
     buttons.get('applyBundled')!.update({ label: t('应用覆盖') });
     buttons.get('cancel')!.update({ label: t('返回编辑') });
     buttons.get('backupRestore')!.update({ label: t('预览恢复') });
     tabs.update({ items: [{ id: 'override', label: t('覆盖') }, { id: 'backups', label: t('备份') }] });
-    editor.update({ label: t('覆盖内容 · Markdown'), placeholder: t('在这里填写 build agent 的 system prompt 正文…') });
+    editor.update({ label: t('覆盖内容'), placeholder: t('填写 system prompt…') });
     backupSelect.update({ label: t('备份时间'), searchPlaceholder: t('搜索时间…'), placeholder: t('选择备份') });
     lastReview = null;
     lastTab = '';
@@ -223,7 +215,13 @@ export const mountView = (root: HTMLElement, i18n: I18n, callbacks: {
       const status = loaded?.status;
       const blocked = state.busy || !loaded || Boolean(state.review);
       title.textContent = loaded ? statusLabel(status!, t) : state.busy ? t('正在读取…') : t('尚未读取');
-      baselineDd.textContent = loaded?.state ? baselineLabel(loaded.state.baselineLabel, t) : t('尚未建立基线');
+      const baseline = loaded?.state?.baseline;
+      baselineDd.textContent = baseline
+        ? isStub(baseline.content)
+          ? t('空 stub（默认）')
+          : t('非空快照 · {count} 字符', { count: baseline.content.length.toLocaleString(locale) })
+        : t('尚未建立基线');
+      baselineDd.title = loaded?.state?.baselineLabel ?? '';
       message.hidden = !state.message;
       message.textContent = state.message;
       message.dataset.tone = state.tone;

@@ -1,10 +1,10 @@
 {
   "name": "openchamber-prompt",
-  "version": "0.1.6",
+  "version": "0.1.7",
   "private": true,
   "license": "MIT",
   "type": "module",
-  "description": "OpenChamber 内置提示词覆盖：一键应用、备份与还原。",
+  "description": "OpenChamber 内置提示词覆盖：应用、备份与还原为空。",
   "openchamber": {
     "apiVersion": 1,
     "engines": {
