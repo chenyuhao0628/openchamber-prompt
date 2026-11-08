@@ -38,7 +38,7 @@ Requires OpenChamber **2.4.0 or newer**. This extension replaces the complete bu
 
 ## 简体中文
 
-当前版本 **0.1.8**。管理 `~/.config/opencode/agents/build.md`：应用、备份、还原为空。面板和工作状态文案跟随宿主语言在简体中文和英文间切换。
+当前版本 **0.1.9**。管理 `~/.config/opencode/agents/build.md`：应用、备份、还原为空。面板和工作状态文案跟随宿主语言在简体中文和英文间切换。
 
 ## 基线 / 还原
 
