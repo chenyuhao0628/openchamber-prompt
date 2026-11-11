@@ -1,7 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createRepository, parseState } from '../src/core/repository.ts';
-import { BACKUP_DIR, ConflictError, STATE_PATH, STUB, TARGET_PATH } from '../src/core/types.ts';
+import { createRepository, parsePresets, parseState } from '../src/core/repository.ts';
+import { BACKUP_DIR, ConflictError, PRESETS_PATH, STATE_PATH, STUB, TARGET_PATH, estimateTokens, extractBody } from '../src/core/types.ts';
 
 class MemoryFiles {
   data = new Map<string, string>();
@@ -10,9 +10,9 @@ class MemoryFiles {
   async list(path: string): Promise<string[]> {
     const prefix = `${path.replace(/\/$/, '')}/`;
     return [...this.data.keys()]
-      .filter(key => key.startsWith(prefix))
-      .map(key => key.slice(prefix.length))
-      .filter(name => !name.includes('/'))
+      .filter((key) => key.startsWith(prefix))
+      .map((key) => key.slice(prefix.length))
+      .filter((name) => !name.includes('/'))
       .sort();
   }
 }
@@ -48,7 +48,7 @@ test('应用覆盖会写文件、建备份并记录状态', async () => {
   assert.ok(next.state);
   assert.equal(next.state.baseline.content, STUB);
   assert.equal(next.state.applied.content, review.content);
-  assert.equal(await repo.listBackups().then(items => items.length), 1);
+  assert.equal(await repo.listBackups().then((items) => items.length), 1);
 });
 
 test('还原会写回空 stub', async () => {
@@ -62,14 +62,18 @@ test('还原会写回空 stub', async () => {
   assert.equal(files.data.get(TARGET_PATH), STUB);
 });
 
-test('外部修改后进入 drifted，并拒绝无重新预览的写入', async () => {
+test('外部修改后进入 drifted，支持只读对比且拒绝无重新预览的写入', async () => {
   const { files, repo } = setup();
   const loaded = await repo.load();
   const review = await repo.reviewApply(loaded, 'First body.');
   const applied = await repo.apply(loaded, review);
-  files.data.set(TARGET_PATH, 'external edit');
+  files.data.set(TARGET_PATH, '---\nmode: all\n---\n\nExternal edit.\n');
   const drifted = await repo.load();
   assert.equal(drifted.status, 'drifted');
+  assert.equal(extractBody(drifted.current.content), 'External edit.');
+  const inspect = repo.reviewDrift(drifted);
+  assert.equal(inspect.kind, 'inspect');
+  await assert.rejects(() => repo.apply(drifted, inspect), /只读差异对比/);
   await assert.rejects(() => repo.apply(applied, review), ConflictError);
 });
 
@@ -119,9 +123,32 @@ test('无状态文件时应用覆盖，还原仍写空 stub，基线仅记录', 
   assert.equal(restored.state?.baseline.content, 'external content');
 });
 
-test('损坏的状态文件不会静默重置', async () => {
+test('损坏的状态文件与预设文件不会静默重置', async () => {
   assert.throws(() => parseState('{'), /状态文件格式有误/);
   assert.throws(() => parseState(JSON.stringify({ version: 2 })), /状态文件格式有误/);
+  assert.throws(() => parsePresets('{'), /预设库文件格式有误/);
+  assert.throws(() => parsePresets(JSON.stringify({ version: 2, presets: [] })), /预设库文件格式有误/);
+});
+
+test('预设库支持新增、更新、去重与删除且不修改 build.md', async () => {
+  const { files, repo } = setup();
+  assert.deepEqual(await repo.loadPresets(), []);
+  const { saved, presets } = await repo.savePreset({ name: '严格重构', content: 'Synthetic preset body.' });
+  assert.equal(presets.length, 1);
+  assert.equal(files.data.get(TARGET_PATH), STUB);
+  await assert.rejects(() => repo.savePreset({ name: '严格重构', content: 'Other' }), /同名预设/);
+  const updated = await repo.savePreset({ id: saved.id, name: '严格重构 v2', content: 'Updated synthetic body.' });
+  assert.equal(updated.saved.name, '严格重构 v2');
+  assert.equal(updated.saved.content, 'Updated synthetic body.');
+  assert.ok(files.data.has(PRESETS_PATH));
+  const afterDelete = await repo.deletePreset(saved.id);
+  assert.equal(afterDelete.length, 0);
+});
+
+test('Token 估算同时支持中英文合成提示词', () => {
+  assert.equal(estimateTokens(''), 0);
+  assert.ok(estimateTokens('Synthetic English system prompt with rules.') > 5);
+  assert.ok(estimateTokens('保持简洁严谨的中文工程规范') >= 12);
 });
 
 test('备份目录过滤非备份文件', async () => {

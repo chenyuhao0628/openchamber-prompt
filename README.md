@@ -8,9 +8,10 @@ English | [简体中文](#简体中文)
 
 ### Highlights
 
-- Apply, preview, back up and restore the build prompt from one panel and Work Status section.
+- Apply, preview, back up, delete old backups with confirmation, and restore the build prompt from one panel and Work Status section.
+- Live character/line/estimated-token metrics, diff comparison toggle against either the live file or the recorded initial baseline, and collapsible baseline snapshot inspection/copy.
 - The baseline is recorded only; restore always writes the empty stub, so the OpenCode default applies.
-- Detects external edits and enters a drift state instead of overwriting.
+- Detects external edits and enters a drift state with a sidebar badge instead of overwriting.
 - Ships no prompt text; the editor starts empty.
 - Replaces the complete build system prompt, so tool policies and code references must be preserved.
 - Only touches `~/.config/opencode/agents/build.md` and `~/.config/openchamber/prompt-override/**`.
@@ -38,7 +39,7 @@ Requires OpenChamber **2.4.0 or newer**. This extension replaces the complete bu
 
 ## 简体中文
 
-当前版本 **0.1.9**。管理 `~/.config/opencode/agents/build.md`：应用、备份、还原为空。面板和工作状态文案跟随宿主语言在简体中文和英文间切换。
+当前版本 **0.2.0**，核对日期 **2026-11-11**。管理 `~/.config/opencode/agents/build.md`：实时字数与估算 Token 指标、相对当前文件/首次基线双对照与基线快照查看复制、应用覆盖、自动备份与确认清理、还原为空及漂移侧栏徽标。面板和工作状态文案跟随宿主语言在简体中文和英文间切换。
 
 ## 基线 / 还原
 
