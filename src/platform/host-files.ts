@@ -1,6 +1,6 @@
 import type { HostClient } from '@openchamber/sdk';
 import { sourceTranslate, type Translate } from '../shared/i18n.ts';
-import { BACKUP_DIR, PRESETS_PATH, STATE_PATH, TARGET_PATH, type Files } from '../core/types.ts';
+import { BACKUP_DIR, DATA_DIR, LIBRARY_PATH, PRESETS_PATH, STATE_PATH, TARGET_PATH, type Files } from '../core/types.ts';
 
 const identity: Translate = sourceTranslate;
 const errorCode = (error: unknown): unknown => error && typeof error === 'object' && 'code' in error ? error.code : undefined;
@@ -9,7 +9,8 @@ type Operation = 'read' | 'write' | 'list';
 const targetLabel = (path: string, operation: Operation, t: Translate): string => {
   if (path === TARGET_PATH) return t('build.md 覆盖');
   if (path === STATE_PATH) return t('覆盖状态');
-  if (path === PRESETS_PATH) return t('预设库');
+  if (path === LIBRARY_PATH || path === PRESETS_PATH) return t('方案库');
+  if (path.startsWith(`${DATA_DIR}/exports/`)) return t('导出文件');
   if (path === `${BACKUP_DIR}` && operation === 'list') return t('备份列表');
   if (path.startsWith(`${BACKUP_DIR}/`)) return t('备份文件');
   return operation === 'list' ? t('文件列表') : t('文件');

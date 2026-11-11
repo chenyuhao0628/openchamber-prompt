@@ -1,10 +1,12 @@
 import { connectHost, type GuestStatusControl } from '@openchamber/sdk';
 import { applyHostReady, mountButton } from '@openchamber/sdk/ui';
 import { createRepository } from '../core/repository.ts';
+import { TARGET_PATH, estimateTokens, extractBody, isStub, matchedProfile } from '../core/types.ts';
 import { explainError, hostFiles } from '../platform/host-files.ts';
-import { el, statusLabel, statusShort } from './view.ts';
+import { currentLabel, el } from './view.ts';
 import native from '../../ui/native.css';
 import { openManager } from '../../ui/navigation.ts';
+import { installScrollbarActivity } from '../../ui/scrollbar.ts';
 import layout from './styles/layout.css';
 import components from './styles/components.css';
 import { applyDocumentLanguage, i18n } from './i18n.ts';
@@ -13,18 +15,23 @@ const { t } = i18n;
 const style = document.createElement('style');
 style.textContent = native + layout + components;
 document.head.append(style);
+installScrollbarActivity(document);
 
 const host = connectHost();
 const repo = createRepository(hostFiles(host, t), Date.now, () => crypto.randomUUID(), t);
 const app = el('section', 'ext po-section');
-const value = el('p', 'po-status-value', t('正在读取…'));
-value.setAttribute('role', 'status');
+const dot = el('span', 'po-status-dot');
+const title = el('p', 'po-status-value', t('正在读取…'));
+title.setAttribute('role', 'status');
+const rowLabel = el('span', 'po-status-label', t('当前方案'));
+const valueWrap = el('span', 'po-status-value-wrap');
+valueWrap.append(dot, title);
 const row = el('div', 'po-status-row');
-const rowLabel = el('span', 'po-status-label', t('当前状态'));
-row.append(rowLabel, value);
-const note = el('p', 'ext-muted', 'build.md');
-note.title = t('仅表示当前连接服务器的文件状态，不代表已有会话已加载规则。');
+row.append(rowLabel, valueWrap);
+
+const note = el('p', 'ext-muted', TARGET_PATH);
 const message = el('p', 'ext-notice');
+note.title = t('仅表示当前连接服务器的文件状态，不代表已有会话已重新加载提示词。');
 message.hidden = true;
 message.setAttribute('role', 'status');
 const footer = el('div', 'po-status-footer');
@@ -40,7 +47,7 @@ let statusControlSignature = '';
 
 const triggerManage = () => {
   message.hidden = true;
-  void openManager(host, { id: 'prompt-override', name: t('内置提示词') }).catch((error: unknown) => {
+  void openManager(host, { id: 'prompt-override', name: t('内置提示词') }).catch((error) => {
     message.hidden = false;
     message.dataset.tone = 'error';
     message.textContent = error instanceof Error ? error.message : explainError(error, t);
@@ -64,28 +71,32 @@ const syncStatusControls = () => {
   });
 };
 
-host.onStatusControl((event) => {
-  if (event.id === 'refresh') void refresh();
-  else if (event.id === 'manage') triggerManage();
-});
-
 const refresh = async () => {
   if (busy) return;
   busy = true;
   button.update({ loading: true });
   syncStatusControls();
   try {
-    const loaded = await repo.load();
-    value.textContent = statusShort(loaded.status, t);
-    value.setAttribute('data-status', loaded.status);
-    value.title = statusLabel(loaded.status, t);
-    note.textContent = t('读取于 {time}', { time: new Date().toLocaleTimeString(i18n.locale, { hour: '2-digit', minute: '2-digit', hour12: false }) });
+    const loaded = await repo.load(false);
+    title.textContent = currentLabel(loaded, t);
+    title.title = title.textContent;
+    const matched = Boolean(matchedProfile(loaded));
+    dot.dataset.tone = loaded.status === 'applied' && matched
+      ? 'success'
+      : loaded.status === 'drifted' || loaded.status === 'baseline' || (loaded.status === 'applied' && !matched)
+        ? 'warning'
+        : 'neutral';
+    const time = new Date().toLocaleTimeString(i18n.locale, { hour: '2-digit', minute: '2-digit' });
+    const body = loaded.current.exists && !isStub(loaded.current.content) ? extractBody(loaded.current.content) : '';
+    const tokens = body ? estimateTokens(body) : 0;
+    note.textContent = tokens > 0
+      ? t('~{tokens} tokens · 读取于 {time}', { tokens: tokens.toLocaleString(i18n.locale), time })
+      : t('读取于 {time}', { time });
     message.hidden = true;
-    void host.setBadge(loaded.status === 'drifted' || loaded.status === 'missing' ? 1 : null).catch(() => {});
   } catch (error) {
-    value.textContent = t('未读取');
-    value.removeAttribute('data-status');
-    note.textContent = 'build.md';
+    dot.dataset.tone = 'error';
+    title.textContent = t('未读取');
+    note.textContent = TARGET_PATH;
     message.textContent = explainError(error, t);
     message.dataset.tone = 'error';
     message.hidden = false;
@@ -93,19 +104,18 @@ const refresh = async () => {
     busy = false;
     button.update({ loading: false });
     syncStatusControls();
-    void host.setHeight(Math.ceil(app.getBoundingClientRect().height)).catch(() => {});
   }
 };
 
 const button = mountButton(actions, { label: t('刷新'), size: 'sm', variant: 'ghost', onClick: () => { void refresh(); } });
-const manage = mountButton(actions, {
-  label: t('管理'),
-  size: 'sm',
-  variant: 'ghost',
-  onClick: triggerManage,
-});
+const manage = mountButton(actions, { label: t('管理'), size: 'sm', variant: 'ghost', onClick: triggerManage });
 const manageButton = actions.lastElementChild!;
 manageButton.setAttribute('aria-label', t('管理内置提示词'));
+
+host.onStatusControl((event) => {
+  if (event.id === 'refresh') void refresh();
+  else if (event.id === 'manage') triggerManage();
+});
 
 new ResizeObserver(() => {
   void host.setHeight(Math.ceil(app.getBoundingClientRect().height)).catch(() => {});
@@ -115,18 +125,20 @@ host.onReady((context) => {
   applyHostReady(context, document.documentElement);
   const changed = i18n.setLocale(context.locale);
   applyDocumentLanguage(i18n);
-  statusControlsSupported = context.features?.statusControls === true;
-  statusControlSignature = '';
-  rowLabel.textContent = t('当前状态');
-  note.title = t('仅表示当前连接服务器的文件状态，不代表已有会话已加载规则。');
+  rowLabel.textContent = t('当前方案');
+  note.title = t('仅表示当前连接服务器的文件状态，不代表已有会话已重新加载提示词。');
   button.update({ label: t('刷新') });
   manage.update({ label: t('管理') });
   manageButton.setAttribute('aria-label', t('管理内置提示词'));
-  syncStatusControls();
+  statusControlsSupported = context.surface === 'status';
   if (!initialized) {
     initialized = true;
+    syncStatusControls();
     void refresh();
   } else if (changed) {
+    statusControlSignature = '';
+    syncStatusControls();
+    note.textContent = TARGET_PATH;
     void refresh();
   }
 });
