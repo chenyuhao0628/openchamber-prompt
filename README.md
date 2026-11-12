@@ -4,12 +4,13 @@ English | [简体中文](#简体中文)
 
 ## English
 
-**Prompt Override (`0.2.1`)** manages multiple OpenCode `build` agent system prompt profiles in `~/.config/opencode/agents/build.md`, visually and interactively aligned 1:1 with `openchamber-agents` (Rule Profiles). Every apply or restore previews line-by-line diffs, backs up the existing file, writes atomically with read-back verification, and can write back the empty stub (`mode: all`) to hand control back to the OpenCode default.
+**Prompt Override (`0.2.2`)** manages multiple OpenCode `build` agent system prompt profiles in `~/.config/opencode/agents/build.md`, visually and interactively aligned 1:1 with `openchamber-agents` (Rule Profiles). Every apply or restore previews line-by-line diffs, backs up the existing file, writes atomically with read-back verification, and can write back the empty stub (`mode: all`) to hand control back to the OpenCode default.
 
 ### Highlights
 
 - **1:1 Aligned Profile Workflow**: Full-width profile selector, inline profile name field, `New / Duplicate / Import`, Markdown section jump (`#` / `##` / `###`), `Compare changes / Copy content`, collapsible `Profile actions` (export, archive/restore, baseline date & uninstall reminder), and sticky footer (`Restore default / Save profile / Preview enablement`).
 - **Aligned Work Status Section**: Displays `Current profile` with a colored status dot (`Matched`, `Default`, `External edit`) and `~tokens · Read at HH:mm`.
+- **Stable Header Controls**: Refresh / Manage republish after a project or session directory change instead of disappearing until the section is folded and reopened.
 - **Lossless Legacy Migration**: Automatically migrates saved presets from `0.2.0` (`presets.json`) into `library.json` without deleting `presets.json`.
 - **Safe Baseline & Drift Handling**: Records the initial baseline date for reference only (upstream prompt upgrades do not auto-rebase); external edits enter `drifted` state with a sidebar badge instead of silent overwrites.
 - **Strict Permission Scope**: Only touches `~/.config/opencode/agents/build.md` and `~/.config/openchamber/prompt-override/**`.
@@ -36,7 +37,9 @@ Requires OpenChamber **2.4.0 or newer**. This extension replaces the complete bu
 
 ## 简体中文
 
-当前版本 **0.2.1**，核对日期 **2026-11-11**。管理 `~/.config/opencode/agents/build.md`：方案库编辑、差异预览、启用覆盖、备份恢复与还原默认（写回空 stub）。面板和工作状态分区与「全局规则（`openchamber-agents`）」保持 1:1 视觉与交互对齐，文案跟随宿主语言在简体中文和英文间切换。
+当前版本 **0.2.2**，核对日期 **2026-11-12**。管理 `~/.config/opencode/agents/build.md`：方案库编辑、差异预览、启用覆盖、备份恢复与还原默认（写回空 stub）。面板和工作状态分区与「全局规则（`openchamber-agents`）」保持 1:1 视觉与交互对齐，文案跟随宿主语言在简体中文和英文间切换。
+
+0.2.2 与规则方案 0.2.1 同步修复工作状态分区标题行控件在目录变化后不重新发布的问题：宿主重新发送 `ready` 或 `directory` 时会重新发布「刷新 / 管理」，并按 `features.statusControls` 判断宿主支持，不再需要折叠重开分区。
 
 0.2.1 将侧栏面板与工作状态分区全面对齐「规则方案」：工作状态摘要统一展示 `当前方案`、状态圆点与方案名及 `~tokens · 读取于 HH:mm`；侧栏采用全宽方案下拉、方案名称输入、`新建 / 复制 / 导入`、Markdown 章节速跳、`对比更改 / 复制全文`、折叠式「方案管理（导出、归档/恢复归档、基线记录与卸载提示）」以及底栏 `还原默认 / 保存方案 / 预览启用`，并自动无损迁移旧版 `presets.json` 到 `library.json`（保留原 `presets.json` 不删除）。
 
